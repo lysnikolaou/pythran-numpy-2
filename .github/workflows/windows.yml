@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         platform: ['windows']
-    runs-on: ${{ matrix.platform }}
+    runs-on: ${{ matrix.platform }}-latest
     steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
@@ -22,14 +22,14 @@ jobs:
           python-version: '3.11'
       - name: Dependencies
         run: |
-          python3.11 -m pip install --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple numpy==2.0.0.dev0
-          python3.11 -m pip install meson meson-python ninja pythran
-      - name: Meson Log
-        shell: bash
-        if: ${{ failure()  }}
-        run: |
-          cat build/meson-logs/meson-log.txt
+          python3 -m pip install --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple numpy==2.0.0.dev0
+          python3 -m pip install meson meson-python ninja pythran
       - name: Setup build
-        run: meson setup build
+        run: meson setup build --vsenv
       - name: Compile
         run: meson compile -C build
+      - name: Meson Log
+        shell: bash
+        if: ${{ failure() }}
+        run: |
+          cat build/meson-logs/meson-log.txt
