@@ -55,21 +55,20 @@ print(incdir)
 endif
 pythran_dep = declare_dependency(include_directories: incdir_pythran)
 
-dprod = custom_target('dprod',
-    output: ['dprod.cpp'],
-    input: 'dprod.py',
-    command: [pythran, '-E', '@INPUT@', '-o', '@OUTDIR@/dprod.cpp']
+brief = custom_target('brief',
+    output: ['brief.cpp'],
+    input: 'brief.py',
+    command: [pythran, '-E', '@INPUT@', '-o', '@OUTDIR@/brief.cpp']
 )
 
 cpp_args_pythran = [
   '-DENABLE_PYTHON_MODULE',
   '-D__PYTHRAN__=3',
   '-DPYTHRAN_BLAS_NONE',
-  '-std=c++17',
 ]
 
-py3.extension_module('dprod',
-    dprod,
+py3.extension_module('brief',
+    brief,
     cpp_args: cpp_args_pythran,
     dependencies: [pythran_dep, np_dep],
     install: true,
