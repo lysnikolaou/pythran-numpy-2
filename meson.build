@@ -1,4 +1,4 @@
-project('pyhtran-numpy-2', 'c', 'cpp', default_options: ['cpp_std=c++14'])
+project('pyhtran-numpy-2', 'c', 'cpp')
 
 py_mod = import('python')
 py3 = py_mod.find_installation(pure: false)
@@ -7,62 +7,49 @@ py3_dep = py3.dependency()
 cc = meson.get_compiler('c')
 cpp = meson.get_compiler('cpp')
 
+# NumPy include directory
 incdir_numpy = meson.get_external_property('numpy-include-dir', 'not-given')
 if incdir_numpy == 'not-given'
+  # If not specified, try to query NumPy from the build python
   incdir_numpy = run_command(py3,
     [
       '-c',
-      '''import os
-import numpy as np
-try:
-    incdir = os.path.relpath(np.get_include())
-except Exception:
-    incdir = np.get_include()
-print(incdir)
-'''
+      'import os; os.chdir(".."); import numpy; print(numpy.get_include())'
     ],
     check: true
   ).stdout().strip()
-
-  # We do need an absolute path to feed to `cc.find_library` below
-  _incdir_numpy_abs = run_command(py3,
-    ['-c', 'import os; os.chdir(".."); import numpy; print(numpy.get_include())'],
-    check: true
-  ).stdout().strip()
-else
-  _incdir_numpy_abs = incdir_numpy
 endif
-inc_np = include_directories(incdir_numpy)
-np_dep = declare_dependency(include_directories: inc_np)
 
-pythran = find_program('pythran', native: true)
+# Pythran include directory
+pythran = find_program('pythran')
 incdir_pythran = meson.get_external_property('pythran-include-dir', 'not-given')
 if incdir_pythran == 'not-given'
-incdir_pythran = run_command(py3,
+  # If not specified, try to query Pythran from the build python
+  incdir_pythran = run_command(py3,
     [
-    '-c',
-    '''import os
-import pythran
-try:
-    incdir = os.path.relpath(pythran.get_include())
-except Exception:
-    incdir = pythran.get_include()
-print(incdir)
-'''
+      '-c',
+      'import os; os.chdir(".."); import pythran; print(os.path.dirname(pythran.__file__));'
     ],
     check: true
-).stdout().strip()
+  ).stdout().strip()
 endif
-pythran_dep = declare_dependency(include_directories: incdir_pythran)
 
-brief = custom_target('brief',
-    output: ['brief.cpp'],
-    input: 'brief.py',
-    command: [pythran, '-E', '@INPUT@', '-o', '@OUTDIR@/brief.cpp']
+_brief_pythran = custom_target('_brief_pythran',
+    output: ['brief_cy.cpp'],
+    input: 'brief_pythran.py',
+    command: [pythran, '-E', '@INPUT@', '-o', '@OUTPUT@']
 )
 
-py3.extension_module('brief',
-    brief,
-    dependencies: [pythran_dep, np_dep],
-    install: true,
+# Pythran build flags
+cpp_args_pythran = [
+  '-DENABLE_PYTHON_MODULE',
+  '-D__PYTHRAN__=3',
+  '-DPYTHRAN_BLAS_NONE'
+]
+
+py3.extension_module('brief_cy',
+    [_brief_pythran],
+    cpp_args: cpp_args_pythran,
+    include_directories: [incdir_numpy, incdir_pythran],
+    dependencies: [py3_dep],
 )
