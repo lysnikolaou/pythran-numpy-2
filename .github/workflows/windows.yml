@@ -31,7 +31,7 @@ jobs:
           "[binaries]","c = 'clang-cl'","cpp = 'clang-cl'","ar = 'llvm-lib'","c_ld = 'lld-link'","cpp_ld = 'lld-link'" | Out-File $PWD/clang-cl-build.ini -Encoding ascii
           meson setup build --vsenv --native-file=$PWD/clang-cl-build.ini
       - name: Compile
-        run: meson compile -C build
+        run: meson compile -C build -v
       - name: Meson Log
         shell: bash
         if: ${{ failure() }}
