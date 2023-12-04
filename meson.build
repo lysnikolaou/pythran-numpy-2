@@ -61,15 +61,8 @@ brief = custom_target('brief',
     command: [pythran, '-E', '@INPUT@', '-o', '@OUTDIR@/brief.cpp']
 )
 
-cpp_args_pythran = [
-  '-DENABLE_PYTHON_MODULE',
-  '-D__PYTHRAN__=3',
-  '-DPYTHRAN_BLAS_NONE',
-]
-
 py3.extension_module('brief',
     brief,
-    cpp_args: cpp_args_pythran,
     dependencies: [pythran_dep, np_dep],
     install: true,
 )
