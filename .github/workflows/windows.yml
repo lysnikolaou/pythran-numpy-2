@@ -25,7 +25,8 @@ jobs:
       - name: Dependencies
         run: |
           python3 -m pip install --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple numpy==2.0.0.dev0
-          python3 -m pip install meson meson-python ninja pythran
+          python3 -m pip install "git+https://github.com/lysnikolaou/pythran.git@change-i"
+          python3 -m pip install meson meson-python ninja
       - name: Setup
         run: |
           "[binaries]","c = 'clang-cl'","cpp = 'clang-cl'","ar = 'llvm-lib'","c_ld = 'lld-link'","cpp_ld = 'lld-link'" | Out-File $PWD/clang-cl-build.ini -Encoding ascii
