@@ -11,8 +11,8 @@ jobs:
     name: Build
     strategy:
       matrix:
-        platform: ['windows']
-    runs-on: ${{ matrix.platform }}-latest
+        platform: ['windows-2019']
+    runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
@@ -22,13 +22,15 @@ jobs:
           python-version: '3.11'
       - name: Install Clang-cl
         run: choco install llvm -y --version=16.0.6
+      - name: Use Clang-cl
+        run: |
+          "[binaries]","c = 'clang-cl'","cpp = 'clang-cl'","ar = 'llvm-lib'","c_ld = 'lld-link'","cpp_ld = 'lld-link'" | Out-File $PWD/clang-cl-build.ini -Encoding ascii
       - name: Dependencies
         run: |
-          python3 -m pip install --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple numpy==2.0.0.dev0
+          python3 -m pip install --config-settings=setup-args="--vsenv" "git+https://github.com/serge-sans-paille/numpy.git@fix/portable-complex-header-inclusion"
           python3 -m pip install meson meson-python ninja pythran
       - name: Setup
         run: |
-          "[binaries]","c = 'clang-cl'","cpp = 'clang-cl'","ar = 'llvm-lib'","c_ld = 'lld-link'","cpp_ld = 'lld-link'" | Out-File $PWD/clang-cl-build.ini -Encoding ascii
           meson setup build -Dbuildtype=release --vsenv --native-file=$PWD/clang-cl-build.ini
       - name: Compile
         run: meson compile -C build -v
