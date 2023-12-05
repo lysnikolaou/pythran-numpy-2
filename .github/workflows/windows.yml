@@ -11,8 +11,8 @@ jobs:
     name: Build
     strategy:
       matrix:
-        platform: ['windows']
-    runs-on: ${{ matrix.platform }}-latest
+        platform: ['windows-2019']
+    runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
@@ -24,7 +24,7 @@ jobs:
         run: choco install llvm -y --version=16.0.6
       - name: Dependencies
         run: |
-          python3 -m pip install "git+https://github.com/numpy/numpy.git@main"
+          python3 -m pip install "git+https://github.com/serge-sans-paille/numpy.git@fix/portable-complex-header-inclusion"
           python3 -m pip install meson meson-python ninja pythran
       - name: Setup
         run: |
